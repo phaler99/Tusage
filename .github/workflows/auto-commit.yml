@@ -2,7 +2,7 @@ name: Auto Commit
 
 on:
   schedule:
-    - cron: '0 12 * * *'  # Once a day at 12:00 UTC
+    - cron: '0 12 * * *'
   workflow_dispatch:
 
 jobs:
@@ -14,8 +14,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.head_ref }}
+
+      - name: Set Git identity
+        run: |
+          git config --global user.name "phaler99"
+          git config --global user.email "phaler99@gmail.com"
 
       - name: commitment
         run: |
@@ -35,9 +38,7 @@ jobs:
             sleep $((RANDOM % 180 + 30))
           done
 
-      - name: smokey-pushing
+      - name: Push all commits with PAT
         run: |
-          git config --global user.name "phaler99"
-          git config --global user.email "phaler99@gmail.com"
           git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
           git push origin HEAD
