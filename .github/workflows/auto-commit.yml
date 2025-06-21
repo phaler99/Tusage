@@ -1,0 +1,37 @@
+name: Auto Commit
+
+on:
+  schedule:
+    - cron: '0 12 * * *'  # Once a day at 12:00 UTC (adjust as you like)
+  workflow_dispatch:
+
+jobs:
+  auto-commit:
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.head_ref }}
+
+      - name: commitment
+        run: |
+          count=$((RANDOM % 15 + 1))  # random number between 1 and 15
+          echo "🔁 Committing $count times..."
+
+          for i in $(seq 1 $count); do
+            echo "Commit $i at $(date)" >> log.txt
+            git add log.txt
+            git commit -m "Update log entry $i"
+            sleep $((RANDOM % 180 + 30))  # sleep 30–210 seconds
+          done
+
+      - name: smokey-pushing
+        run: |
+          git config --global user.name "phaler99"
+          git config --global user.email "phaler99@gmail.com"
+          git remote set-url origin https://x-access-token:${{ secrets.PAT_TOKEN }}@github.com/${{ github.repository }}
+          git push origin HEAD
