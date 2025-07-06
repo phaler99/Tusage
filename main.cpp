@@ -42,8 +42,6 @@ int main() {
     std::vector<Session> sessions;
 
     while (true) {
-        std::cout << "Checking foreground window..." << std::endl;
-
         HWND hwnd = GetForegroundWindow();
         if (hwnd) {
             DWORD pid = 0;
@@ -64,10 +62,7 @@ int main() {
                 lastPid = pid;
                 lastStartTime = std::time(nullptr);
             }
-        } else {
-            std::cout << "No foreground window detected." << std::endl;
         }
-
         std::this_thread::sleep_for(std::chrono::seconds(1));
     }
     return 0;
