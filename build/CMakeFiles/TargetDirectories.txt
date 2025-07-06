@@ -1,0 +1,3 @@
+C:/projects/Tusage/build/CMakeFiles/Tusage.dir
+C:/projects/Tusage/build/CMakeFiles/edit_cache.dir
+C:/projects/Tusage/build/CMakeFiles/rebuild_cache.dir
