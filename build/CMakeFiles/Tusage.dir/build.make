@@ -95,6 +95,7 @@ Tusage.exe: CMakeFiles/Tusage.dir/build.make
 Tusage.exe: C:/Qt/6.9.1/mingw_64/lib/libQt6Widgets.a
 Tusage.exe: C:/Qt/6.9.1/mingw_64/lib/libQt6Gui.a
 Tusage.exe: C:/Qt/6.9.1/mingw_64/lib/libQt6Core.a
+Tusage.exe: C:/Qt/6.9.1/mingw_64/lib/libQt6EntryPoint.a
 Tusage.exe: CMakeFiles/Tusage.dir/linkLibs.rsp
 Tusage.exe: CMakeFiles/Tusage.dir/objects1.rsp
 Tusage.exe: CMakeFiles/Tusage.dir/link.txt
