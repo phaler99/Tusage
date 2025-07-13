@@ -7,16 +7,12 @@
 #include <ctime>
 
 std::wstring GetProcessName(DWORD pid) {
-    std::wstring name = L"";
     HANDLE process = OpenProcess(PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ, FALSE, pid);
-    if (process) {
-        wchar_t buffer[MAX_PATH];
-        if (GetModuleFileNameEx(process, NULL, buffer, MAX_PATH)) {
-            name = buffer;
-        }
-        CloseHandle(process);
-    }
-    return name;
+    if (!process) return L"";
+    wchar_t buffer[MAX_PATH] = {0};
+    GetModuleFileNameExW(process, NULL, buffer, MAX_PATH);
+    CloseHandle(process);
+    return buffer;
 }
 
 std::string FormatTime(std::time_t t) {
@@ -30,26 +26,32 @@ std::string FormatTime(std::time_t t) {
 int main() {
     DWORD lastPid = 0;
     std::time_t lastStartTime = std::time(nullptr);
+    std::wstring lastApp;
+    HWND lastHwnd = nullptr;
 
     while (true) {
         HWND hwnd = GetForegroundWindow();
+        if (!hwnd) {
+            std::this_thread::sleep_for(std::chrono::seconds(1));
+            continue;
+        }
+
         DWORD pid = 0;
-        if (hwnd) GetWindowThreadProcessId(hwnd, &pid);
+        GetWindowThreadProcessId(hwnd, &pid);
+        std::wstring currentApp = GetProcessName(pid);
+
+        // Check explorer.exe with empty window title
+        if (currentApp.find(L"explorer.exe") != std::wstring::npos) {
+            wchar_t title[256] = {0};
+            GetWindowTextW(hwnd, title, 256);
+            if (wcslen(title) == 0) {
+                std::this_thread::sleep_for(std::chrono::seconds(1));
+                continue;
+            }
+        }
 
         if (pid != lastPid) {
-            if (lastPid != 0) {
-                std::wstring lastApp = GetProcessName(lastPid);
-
-                if (lastApp.find(L"explorer.exe") != std::wstring::npos) {
-                    wchar_t title[256];
-                    GetWindowTextW(hwnd, title, 256);
-                    if (wcslen(title) == 0) {
-                        lastPid = pid;
-                        lastStartTime = std::time(nullptr);
-                        continue;
-                    }
-                }
-
+            if (!lastApp.empty()) {
                 std::time_t now = std::time(nullptr);
                 int duration = static_cast<int>(now - lastStartTime);
 
@@ -58,6 +60,7 @@ int main() {
             }
 
             lastPid = pid;
+            lastApp = currentApp;
             lastStartTime = std::time(nullptr);
         }
 
