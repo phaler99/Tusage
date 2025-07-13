@@ -15,6 +15,12 @@ std::wstring GetProcessName(DWORD pid) {
     return buffer;
 }
 
+std::wstring GetWindowTitle(HWND hwnd) {
+    wchar_t title[256] = {0};
+    GetWindowTextW(hwnd, title, 256);
+    return title;
+}
+
 std::string FormatTime(std::time_t t) {
     std::tm tm;
     localtime_s(&tm, &t);
@@ -27,27 +33,29 @@ int main() {
     DWORD lastPid = 0;
     std::time_t lastStartTime = std::time(nullptr);
     std::wstring lastApp;
-    HWND lastHwnd = nullptr;
 
     while (true) {
         HWND hwnd = GetForegroundWindow();
         if (!hwnd) {
-            std::this_thread::sleep_for(std::chrono::seconds(1));
+            std::cout << "[Debug] No foreground window\n";
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
         }
 
         DWORD pid = 0;
         GetWindowThreadProcessId(hwnd, &pid);
         std::wstring currentApp = GetProcessName(pid);
+        std::wstring title = GetWindowTitle(hwnd);
 
-        // Check explorer.exe with empty window title
-        if (currentApp.find(L"explorer.exe") != std::wstring::npos) {
-            wchar_t title[256] = {0};
-            GetWindowTextW(hwnd, title, 256);
-            if (wcslen(title) == 0) {
-                std::this_thread::sleep_for(std::chrono::seconds(1));
-                continue;
-            }
+        std::wcout << L"[Debug] PID: " << pid
+                   << L", App: " << currentApp
+                   << L", Title: \"" << title << L"\"\n";
+
+        // Skip explorer.exe with empty title
+        if (currentApp.find(L"explorer.exe") != std::wstring::npos && title.empty()) {
+            std::wcout << L"[Debug] Skipped explorer.exe with empty title (desktop)\n\n";
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+            continue;
         }
 
         if (pid != lastPid) {
@@ -56,7 +64,7 @@ int main() {
                 int duration = static_cast<int>(now - lastStartTime);
 
                 std::cout << "Session: " << std::string(lastApp.begin(), lastApp.end())
-                          << ", Duration: " << duration << " seconds, Timestamp: " << FormatTime(lastStartTime) << std::endl;
+                          << ", Duration: " << duration << " seconds, Timestamp: " << FormatTime(lastStartTime) << "\n\n";
             }
 
             lastPid = pid;
@@ -64,6 +72,6 @@ int main() {
             lastStartTime = std::time(nullptr);
         }
 
-        std::this_thread::sleep_for(std::chrono::seconds(1));
+        std::this_thread::sleep_for(std::chrono::milliseconds(100));
     }
 }
