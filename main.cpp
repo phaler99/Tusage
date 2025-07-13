@@ -51,9 +51,10 @@ int main() {
                    << L", App: " << currentApp
                    << L", Title: \"" << title << L"\"\n";
 
-        // Skip explorer.exe with empty title
-        if (currentApp.find(L"explorer.exe") != std::wstring::npos && title.empty()) {
-            std::wcout << L"[Debug] Skipped explorer.exe with empty title (desktop)\n\n";
+        // Skip explorer.exe if it's the desktop (title is empty or "Program Manager")
+        if (currentApp.find(L"explorer.exe") != std::wstring::npos &&
+            (title.empty() || title == L"Program Manager")) {
+            std::wcout << L"[Debug] Skipped explorer.exe with title: \"" << title << L"\"\n\n";
             std::this_thread::sleep_for(std::chrono::milliseconds(100));
             continue;
         }
